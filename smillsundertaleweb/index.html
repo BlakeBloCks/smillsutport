@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Calculus AP Study Guide</title>
+ <style>
+ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; text-align: center; font-family: monospace; }
+ 
+ /* Centers the game window perfectly and preserves the true 4:3 ratio */
+ iframe {
+ position: fixed !important;
+ top: 0 !important;
+ left: 50% !important;
+ transform: translateX(-50%) !important;
+ width: calc(100vh * 4 / 3) !important;
+ height: 100vh !important;
+ max-width: 100vw !important;
+ z-index: 1 !important;
+ border: none !important;
+ margin: 0 !important;
+ padding: 0 !important;
+ background: #000 !important;
+ }
+
+ /* Floating backup panel sitting completely inside the empty left black margin sidebar */
+ .sidebar-controls {
+ position: fixed !important;
+ top: 15px !important;
+ left: 15px !important;
+ z-index: 99999 !important;
+ display: flex;
+ flex-direction: column;
+ gap: 8px;
+ }
+
+ /* Tiny, low-visibility transparent options that blend directly into the dark margin */
+ .stealth-btn {
+ background: rgba(255, 255, 255, 0.03) !important;
+ color: rgba(255, 255, 255, 0.2) !important;
+ border: 1px solid rgba(255, 255, 255, 0.1) !important;
+ padding: 5px 10px !important;
+ font-size: 10px !important;
+ font-family: monospace !important;
+ cursor: pointer;
+ text-align: center;
+ border-radius: 2px;
+ transition: all 0.2s ease;
+ }
+
+ /* Highlight sharply with an Undertale yellow glow ONLY when mouse cursor hovers over them */
+ .stealth-btn:hover {
+ background: #000 !important;
+ color: #ff0 !important;
+ border-color: #ff0 !important;
+ }
+ </style>
+</head>
+<body>
+
+ <!-- Embeds your local game runner cleanly on the exact same root origin domain -->
+ <iframe id="game-frame" src="runner.html"></iframe>
+
+ <div class="sidebar-controls">
+ <button class="stealth-btn" onclick="exportSave()">💾 EXP</button>
+ <label class="stealth-btn" for="import-file">📂 IMP</label>
+ <input type="file" id="import-file" accept=".json,.txt" onchange="importSave(this)" style="display: none;">
+ </div>
+
+ <script>
+ const SAVE_KEY = 'gamedata';
+
+ // --- UNBLOCKED WORKING SAME-ORIGIN BACKUPS ---
+ function exportSave() {
+ const iframe = document.getElementById('game-frame');
+ try {
+ const gameStorage = iframe.contentWindow.localStorage;
+ const data = gameStorage.getItem(SAVE_KEY);
+ if (!data) { alert("Timeline empty. Interact with an in-game Save Point first!"); return; }
+ const blob = new Blob([data], { type: 'application/json' });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a'); a.href = url; a.download = 'undertale_save.json';
+ document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+ } catch(e) {
+ alert("Storage error. Direct saves operate securely on the active web host domain server.");
+ }
+ }
+
+ function importSave(input) {
+ if (!input.files || !input.files) return;
+ const reader = new FileReader();
+ reader.onload = function(e) {
+ try {
+ const iframe = document.getElementById('game-frame');
+ iframe.contentWindow.localStorage.setItem(SAVE_KEY, e.target.result);
+ alert("Timeline successfully overwritten! Reloading universe...");
+ iframe.contentWindow.location.reload();
+ } catch(err) { alert("Error loading save file signature."); }
+ };
+ reader.readAsText(input.files);
+ }
+ </script>
+</body>
+</html>
